@@ -23,7 +23,10 @@ step() {
     summary+=("ok      $name ($((SECONDS - start))s)")
   else
     summary+=("FAILED  $name ($((SECONDS - start))s), last lines of $logs/$name.log:")
-    summary+=("$(tail -n 15 "$logs/$name.log" | sed 's/^/          /')")
+    # Skip Rust backtrace frames (RUST_BACKTRACE=1 in cloud sessions): they
+    # would push elan's error line out of the tail.
+    summary+=("$(grep -Ev '^ *[0-9]+: |^info: backtrace:$|^$' "$logs/$name.log" |
+                 tail -n 15 | sed 's/^/          /')")
   fi
 }
 
